@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root { --primary: #E60012; --bg: #F7F7F7; --white: #ffffff; --text: #333333; --gray: #666666; --border: #CCCCCC; }
@@ -32,13 +33,19 @@
     .menu-drawer.active { transform: translateX(0); box-shadow: 8px 0 20px rgba(0,0,0,0.2); }
     .menu-drawer h3 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-top: 0; }
     .menu-link { display: block; padding: 18px 0; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: var(--text); font-weight: bold; }
+    #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; color: var(--primary); }
   </style>
 </head>
 <body>
 
+<div id="loadingOverlay">
+  <div class="material-icons" style="font-size: 50px; margin-bottom: 10px; animation: spin 2s linear infinite;">sync</div>
+  データ読み込み中...
+</div>
+
 <header>
   <div class="header-icon"><span class="material-icons" onclick="toggleMenu()">menu</span></div>
-  <div class="tax-display" id="taxHeader">【所得税率】--% 【住民税率(所得割)】10%</div>
+  <div class="tax-display" id="taxHeader">読み込み中...</div>
   <div class="header-icon"><span class="material-icons" onclick="openSettings()">settings</span></div>
 </header>
 
@@ -79,7 +86,7 @@
 </div>
 
 <script>
-// --- 最新のURLに書き換えてください ---
+// --- 重要：ここに最新のGAS URL(末尾/exec)を貼り付け ---
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxvKlbO0KCBNeVgiIPD_lSyFYrudMWmrPumzkocR6y7ArABYVuwwgKPUjgDqJFP9M9C/exec"; 
 
 let appData = {};
@@ -87,54 +94,111 @@ let selectedIncomeTax = 0;
 const RESIDENCE_TAX = 0.1;
 
 window.onload = () => {
-  // 通信状態を表示（デバッグ用）
-  console.log("Connecting to GAS...");
-  
-  // Googleのリダイレクトを自動追従してデータを取得
-  fetch(GAS_URL, {
-    method: "GET",
-    mode: "cors", // これが重要です
-  })
-    .then(res => {
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
-    })
+  fetch(GAS_URL)
+    .then(response => response.json())
     .then(data => {
-      console.log("Data received:", data);
       appData = data;
+      document.getElementById('loadingOverlay').style.display = 'none';
       initApp();
     })
-    .catch(err => {
-      console.error("Fetch error:", err);
-      alert("データの取得に失敗しました。以下の点を確認してください：\n1. GASのURLが正しいか\n2. GASのデプロイ設定が『全員(Anyone)』になっているか");
+    .catch(error => {
+      alert("データの読み込みに失敗しました。GASの公開設定を確認してください。");
+      console.error(error);
     });
 };
 
 function initApp() {
-  // データが空でないかチェック
-  if (!appData.taxes || !appData.taxes.income) {
-    console.error("AppData is incomplete");
-    return;
-  }
-
   const incomeSel = document.getElementById('incomeTaxSelect');
-  incomeSel.innerHTML = ""; // 初期化
-  
-  appData.taxes.income.forEach((v, i) => {
+  incomeSel.innerHTML = "";
+  appData.taxes.income.forEach((v) => {
     let opt = new Option(v + "%", v);
     if(v == 20) opt.selected = true;
     incomeSel.add(opt);
   });
-
   const linkCont = document.getElementById('linkContainer');
-  linkCont.innerHTML = ""; // 初期化
+  linkCont.innerHTML = "";
   appData.links.forEach(l => {
     const a = document.createElement('a');
     a.href = l.url; a.className = 'menu-link'; a.target = '_blank';
     a.innerText = l.title;
     linkCont.appendChild(a);
   });
-  
   saveSettings();
   addRouteRow();
 }
+
+function addRouteRow() {
+  const id = Date.now();
+  const optionsHtml = appData.airports.map(a => {
+    if (a.isCategory) return `<option value="${a.name}" disabled style="background:#eee; font-weight:bold; color:#E60012; padding:5px 0;">${a.name}</option>`;
+    return `<option value="${a.name}">${a.name}</option>`;
+  }).join('');
+
+  const html = `<div class="route-card" id="row-${id}"><select id="dep-${id}" onchange="updateArrivalOptions('${id}')"><option value="">出発地</option>${optionsHtml}</select><span class="material-icons arrow-icon">arrow_forward</span><select id="arr-${id}" onchange="calculate()"><option value="">到着地</option>${optionsHtml}</select><span class="material-icons" style="color:#ddd; cursor:pointer; font-size:26px; margin-left:4px;" onclick="removeRow('${id}')">cancel</span></div>`;
+  document.getElementById('routeContainer').insertAdjacentHTML('beforeend', html);
+}
+
+function updateArrivalOptions(id) {
+  const depVal = document.getElementById(`dep-${id}`).value;
+  const arrSelect = document.getElementById(`arr-${id}`);
+  const possibleArrs = appData.routes.filter(r => r.name.includes(depVal)).map(r => r.name.replace(depVal, "").replace("=", ""));
+  Array.from(arrSelect.options).forEach(opt => {
+    if (opt.value === "" || opt.disabled) return;
+    opt.disabled = !possibleArrs.includes(opt.value);
+    opt.style.color = opt.disabled ? "#ccc" : "#000";
+  });
+  calculate();
+}
+
+function removeRow(id) {
+  if (document.querySelectorAll('.route-card').length > 1) { document.getElementById(`row-${id}`).remove(); calculate(); }
+}
+
+function saveSettings() {
+  const val = document.getElementById('incomeTaxSelect').value;
+  selectedIncomeTax = parseFloat(val) / 100;
+  document.getElementById('taxHeader').innerText = `【所得税率】${val}% 【住民税率(所得割)】10%`;
+  closeSettings();
+  calculate();
+}
+
+function calculate() {
+  let totalLT00 = 0, totalLTZL = 0;
+  const adults = parseInt(document.getElementById('adultCount').value) || 0;
+  const children = parseInt(document.getElementById('childCount').value) || 0;
+  let detailHtml = "";
+  document.querySelectorAll('.route-card').forEach(row => {
+    const id = row.id.split('-')[1];
+    const dep = document.getElementById(`dep-${id}`).value;
+    const arr = document.getElementById(`arr-${id}`).value;
+    if (dep && arr) {
+      const route = appData.routes.find(r => r.name === `${dep}=${arr}` || r.name === `${arr}=${dep}`);
+      const dPort = appData.airports.find(a => a.name === dep && !a.isCategory);
+      const aPort = appData.airports.find(a => a.name === arr && !a.isCategory);
+      if (route && dPort && aPort) {
+        const fareA = route.fareA, pfcSumA = dPort.pfcA + aPort.pfcA;
+        const lt00A = (fareA * selectedIncomeTax) + (fareA * RESIDENCE_TAX) + pfcSumA, ltzlA = fareA + pfcSumA;
+        const fareC = route.fareC, pfcSumC = dPort.pfcC + aPort.pfcC;
+        const lt00C = (fareC * selectedIncomeTax) + (fareC * RESIDENCE_TAX) + pfcSumC, ltzlC = fareC + pfcSumC;
+        totalLT00 += (lt00A * adults) + (lt00C * children);
+        totalLTZL += (ltzlA * adults) + (ltzlC * children);
+        detailHtml += `<div style="border-bottom:1px solid #eee; padding:12px 0;"><b style="color:var(--primary)">${dep} ⇄ ${arr}</b><br><span style="font-size:12px; color:var(--gray)">大人: LT00 ¥${Math.round(lt00A).toLocaleString()} / LTZL ¥${Math.round(ltzlA).toLocaleString()}<br>子供: LT00 ¥${Math.round(lt00C).toLocaleString()} / LTZL ¥${Math.round(ltzlC).toLocaleString()}</span></div>`;
+      }
+    }
+  });
+  document.getElementById('totalLT00').innerText = `¥${Math.round(totalLT00).toLocaleString()}`;
+  document.getElementById('totalLTZL').innerText = `¥${Math.round(totalLTZL).toLocaleString()}`;
+  document.getElementById('breakdownSection').innerHTML = detailHtml || "路線を選択してください";
+}
+
+function toggleMenu() { document.getElementById('menuDrawer').classList.toggle('active'); const overlay = document.getElementById('menuOverlay'); overlay.style.display = (overlay.style.display === 'block') ? 'none' : 'block'; }
+function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
+function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+function toggleBreakdown() { const b = document.getElementById('breakdownSection'); const icon = document.getElementById('expandIcon'); const isShow = (b.style.display === 'block'); b.style.display = isShow ? 'none' : 'block'; icon.innerText = isShow ? 'add_circle' : 'remove_circle'; }
+</script>
+
+<style>
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+</body>
+</html>
