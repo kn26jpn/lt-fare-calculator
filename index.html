@@ -79,9 +79,62 @@
 </div>
 
 <script>
-// --- ここからがGitHub Pages用に修正した通信部分です ---
+// --- 最新のURLに書き換えてください ---
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxvKlbO0KCBNeVgiIPD_lSyFYrudMWmrPumzkocR6y7ArABYVuwwgKPUjgDqJFP9M9C/exec"; 
 
 let appData = {};
 let selectedIncomeTax = 0;
 const RESIDENCE_TAX = 0.1;
+
+window.onload = () => {
+  // 通信状態を表示（デバッグ用）
+  console.log("Connecting to GAS...");
+  
+  // Googleのリダイレクトを自動追従してデータを取得
+  fetch(GAS_URL, {
+    method: "GET",
+    mode: "cors", // これが重要です
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.json();
+    })
+    .then(data => {
+      console.log("Data received:", data);
+      appData = data;
+      initApp();
+    })
+    .catch(err => {
+      console.error("Fetch error:", err);
+      alert("データの取得に失敗しました。以下の点を確認してください：\n1. GASのURLが正しいか\n2. GASのデプロイ設定が『全員(Anyone)』になっているか");
+    });
+};
+
+function initApp() {
+  // データが空でないかチェック
+  if (!appData.taxes || !appData.taxes.income) {
+    console.error("AppData is incomplete");
+    return;
+  }
+
+  const incomeSel = document.getElementById('incomeTaxSelect');
+  incomeSel.innerHTML = ""; // 初期化
+  
+  appData.taxes.income.forEach((v, i) => {
+    let opt = new Option(v + "%", v);
+    if(v == 20) opt.selected = true;
+    incomeSel.add(opt);
+  });
+
+  const linkCont = document.getElementById('linkContainer');
+  linkCont.innerHTML = ""; // 初期化
+  appData.links.forEach(l => {
+    const a = document.createElement('a');
+    a.href = l.url; a.className = 'menu-link'; a.target = '_blank';
+    a.innerText = l.title;
+    linkCont.appendChild(a);
+  });
+  
+  saveSettings();
+  addRouteRow();
+}
