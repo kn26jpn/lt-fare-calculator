@@ -184,7 +184,8 @@ function addRouteRow() {
   const id = Date.now();
   const optionsHtml = appData.airports.map(a => {
     if (a.isCategory) {
-      return `<option value="${a.name}" disabled style="background:#eee; font-weight:bold; color:#333333; padding:5px 0;">${a.name}</option>`;
+      // disabledを廃止し、valueを識別用キーワードに変更して、通常の黒文字（#333333）を指定
+      return `<option value="__category__" style="background:#eee; font-weight:bold; color:#333333; padding:5px 0;">${a.name}</option>`;
     } else {
       return `<option value="${a.name}">${a.name}</option>`;
     }
@@ -208,7 +209,14 @@ function addRouteRow() {
 }
 
 function updateArrivalOptions(id) {
-  const depVal = document.getElementById(`dep-${id}`).value;
+  const depSelect = document.getElementById(`dep-${id}`);
+  
+  // もし【主要な空港】などのカテゴリー行が選ばれたら、即座に未選択状態（空文字）にリセットして選択させない
+  if (depSelect.value === "__category__") {
+    depSelect.value = "";
+  }
+
+  const depVal = depSelect.value;
   const arrSelect = document.getElementById(`arr-${id}`);
   
   // 出発地が変更されたので、現在の到着地の選択を一旦クリアしてリセット
@@ -217,7 +225,7 @@ function updateArrivalOptions(id) {
   if (depVal === "") {
     // 出発地が何も選択されていない場合は、すべての到着地を選択可能（初期状態）に戻す
     Array.from(arrSelect.options).forEach(opt => {
-      if (opt.value === "" || opt.value.startsWith('【')) return;
+      if (opt.value === "" || opt.value === "__category__") return;
       opt.disabled = false;
       opt.style.color = "#000";
     });
@@ -228,7 +236,7 @@ function updateArrivalOptions(id) {
       .map(r => r.name.replace(depVal, "").replace("=", ""));
 
     Array.from(arrSelect.options).forEach(opt => {
-      if (opt.value === "" || opt.value.startsWith('【')) return;
+      if (opt.value === "" || opt.value === "__category__") return;
       
       // 毎回新しく利用可能か上書き評価することで、グレーアウトが固着するのを防ぐ
       opt.disabled = !possibleArrs.includes(opt.value);
@@ -269,8 +277,15 @@ function calculate() {
 
   document.querySelectorAll('.route-card').forEach(row => {
     const id = row.id.split('-')[1];
-    const dep = document.getElementById(`dep-${id}`).value;
-    const arr = document.getElementById(`arr-${id}`).value;
+    const depSelect = document.getElementById(`dep-${id}`);
+    const arrSelect = document.getElementById(`arr-${id}`);
+    
+    // 到着地や出発地側でカテゴリー行が万が一選ばれた場合も、即座に選択を弾いてリセットする
+    if (arrSelect.value === "__category__") arrSelect.value = "";
+    if (depSelect.value === "__category__") depSelect.value = "";
+
+    const dep = depSelect.value;
+    const arr = arrSelect.value;
     
     if (dep && arr) {
       const route = appData.routes.find(r => r.name === `${dep}=${arr}` || r.name === `${arr}=${dep}`);
