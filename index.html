@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base target="_top">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
@@ -273,7 +275,7 @@ function calculate() {
     if (dep && arr) {
       const route = appData.routes.find(r => r.name === `${dep}=${arr}` || r.name === `${arr}=${dep}`);
       const dPort = appData.airports.find(a => a.name === dep && !a.isCategory);
-      const aPort = appPort = appData.airports.find(a => a.name === arr && !a.isCategory);
+      const aPort = appData.airports.find(a => a.name === arr && !a.isCategory);
       
       if (route && dPort && aPort) {
         // --- 大人料金の計算 ---
