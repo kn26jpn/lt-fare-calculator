@@ -184,7 +184,7 @@ function addRouteRow() {
   const id = Date.now();
   const optionsHtml = appData.airports.map(a => {
     if (a.isCategory) {
-      return `<option value="${a.name}" disabled style="background:#eee; font-weight:bold; color:#ffffff; padding:5px 0;">${a.name}</option>`;
+      return `<option value="${a.name}" disabled style="background:#eee; font-weight:bold; color:#333333; padding:5px 0;">${a.name}</option>`;
     } else {
       return `<option value="${a.name}">${a.name}</option>`;
     }
