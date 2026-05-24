@@ -138,6 +138,7 @@ const RESIDENCE_TAX = 0.1; // 住民税 10%
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxvKlbO0KCBNeVgiIPD_lSyFYrudMWmrPumzkocR6y7ArABYVuwwgKPUjgDqJFP9M9C/exec'; 
 
 window.onload = () => {
+  // GitHub PagesからCORSエラーを起こさずにGASのデータを安全に取得します
   fetch(GAS_URL)
     .then(response => {
       if (!response.ok) throw new Error('ネットワーク応答が正常ではありません。');
@@ -181,8 +182,7 @@ function addRouteRow() {
   const id = Date.now();
   const optionsHtml = appData.airports.map(a => {
     if (a.isCategory) {
-      // ユーザー指定部分：カテゴリ（【主要な空港】など）の背景を赤、文字色を白に変更
-      return `<option value="${a.name}" disabled style="background:#E60012; font-weight:bold; color:#ffffff; padding:5px 0;">${a.name}</option>`;
+      return `<option value="${a.name}" disabled style="background:#eee; font-weight:bold; color:#ffffff; padding:5px 0;">${a.name}</option>`;
     } else {
       return `<option value="${a.name}">${a.name}</option>`;
     }
@@ -209,15 +209,18 @@ function updateArrivalOptions(id) {
   const depVal = document.getElementById(`dep-${id}`).value;
   const arrSelect = document.getElementById(`arr-${id}`);
   
+  // 出発地が変更されたので、現在の到着地の選択を一旦クリアしてリセット
   arrSelect.value = "";
 
   if (depVal === "") {
+    // 出発地が何も選択されていない場合は、すべての到着地を選択可能（初期状態）に戻す
     Array.from(arrSelect.options).forEach(opt => {
       if (opt.value === "" || opt.value.startsWith('【')) return;
       opt.disabled = false;
       opt.style.color = "#000";
     });
   } else {
+    // 出発地が選択されている場合は、路線設定のある到着地のみを有効化（グレーアウトの再計算）
     const possibleArrs = appData.routes
       .filter(r => r.name.includes(depVal))
       .map(r => r.name.replace(depVal, "").replace("=", ""));
@@ -225,6 +228,7 @@ function updateArrivalOptions(id) {
     Array.from(arrSelect.options).forEach(opt => {
       if (opt.value === "" || opt.value.startsWith('【')) return;
       
+      // 毎回新しく利用可能か上書き評価することで、グレーアウトが固着するのを防ぐ
       opt.disabled = !possibleArrs.includes(opt.value);
       opt.style.color = opt.disabled ? "#ccc" : "#000";
     });
@@ -234,9 +238,11 @@ function updateArrivalOptions(id) {
 
 function removeRow(id) {
   if (document.querySelectorAll('.route-card').length > 1) { 
+    // 2路線目以降は今までと同様に枠全体を削除
     document.getElementById(`row-${id}`).remove(); 
     calculate(); 
   } else {
+    // 1路線目の場合は枠を残し、出発地を空にして連動クリア（初期状態）を呼び出す
     document.getElementById(`dep-${id}`).value = "";
     updateArrivalOptions(id);
   }
@@ -267,7 +273,7 @@ function calculate() {
     if (dep && arr) {
       const route = appData.routes.find(r => r.name === `${dep}=${arr}` || r.name === `${arr}=${dep}`);
       const dPort = appData.airports.find(a => a.name === dep && !a.isCategory);
-      const aPort = appData.airports.find(a => a.name === arr && !a.isCategory);
+      const aPort = appPort = appData.airports.find(a => a.name === arr && !a.isCategory);
       
       if (route && dPort && aPort) {
         // --- 大人料金の計算 ---
