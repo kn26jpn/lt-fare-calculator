@@ -181,7 +181,7 @@ function addRouteRow() {
   const id = Date.now();
   const optionsHtml = appData.airports.map(a => {
     if (a.isCategory) {
-      // 背景をJALレッド(#E60012)に、文字色を白(#ffffff)に変更しました
+      // ユーザー指定部分：カテゴリ（【主要な空港】など）の背景を赤、文字色を白に変更
       return `<option value="${a.name}" disabled style="background:#E60012; font-weight:bold; color:#ffffff; padding:5px 0;">${a.name}</option>`;
     } else {
       return `<option value="${a.name}">${a.name}</option>`;
