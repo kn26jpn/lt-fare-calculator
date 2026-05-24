@@ -1,53 +1,95 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <base target="_top">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    :root { --primary: #E60012; --bg: #F7F7F7; --white: #ffffff; --text: #333333; --gray: #666666; --border: #CCCCCC; }
+    :root {
+      --primary: #E60012; /* JALレッド */
+      --bg: #F7F7F7;      
+      --white: #ffffff;
+      --text: #333333;
+      --gray: #666666;
+      --border: #CCCCCC;
+    }
     * { box-sizing: border-box; }
-    body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); padding-bottom: 160px; }
-    header { background: var(--primary); color: var(--white); display: flex; align-items: center; justify-content: space-between; padding: 10px 8px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-    .tax-display { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; font-size: clamp(8px, 2.6vw, 12px); letter-spacing: -0.5px; font-weight: 500; }
+    body {
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      margin: 0; padding: 0; background-color: var(--bg); color: var(--text);
+      padding-bottom: 160px;
+    }
+    header {
+      background: var(--primary); color: var(--white);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 8px; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .tax-display {
+      flex: 1; text-align: center; white-space: nowrap; overflow: hidden;
+      font-size: clamp(8px, 2.6vw, 12px); letter-spacing: -0.5px; font-weight: 500;
+    }
     .header-icon { cursor: pointer; width: 36px; text-align: center; display: flex; align-items: center; justify-content: center; }
     .container { max-width: 600px; margin: 0 auto; padding: 15px; }
     h2 { text-align: center; font-size: 1.2rem; color: var(--text); margin: 5px 0 20px 0; font-weight: bold; }
-    .route-card { background: var(--white); border-radius: 8px; padding: 12px 10px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 8px; width: 100%; }
-    select { flex: 1; padding: 12px 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 15px; background: #fff; min-width: 0; color: var(--text); -webkit-appearance: none; }
+    .route-card {
+      background: var(--white); border-radius: 8px; padding: 12px 10px;
+      margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex; align-items: center; gap: 8px; width: 100%;
+    }
+    select {
+      flex: 1; padding: 12px 6px; border: 1px solid var(--border);
+      border-radius: 4px; font-size: 15px; background: #fff; min-width: 0;
+      color: var(--text); -webkit-appearance: none;
+    }
     .arrow-icon { color: var(--primary); font-size: 20px; flex-shrink: 0; }
-    .btn-add { display: flex; align-items: center; justify-content: center; background: var(--white); border: 1.5px solid var(--primary); color: var(--primary); width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; margin: 0 0 20px 0; font-weight: bold; font-size: 15px; }
-    .passenger-row { display: flex; background: var(--white); padding: 18px; border-radius: 8px; gap: 10px; justify-content: space-around; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%; }
+    .btn-add {
+      display: flex; align-items: center; justify-content: center;
+      background: var(--white); border: 1.5px solid var(--primary);
+      color: var(--primary); width: 100%; padding: 12px;
+      border-radius: 8px; cursor: pointer; margin: 0 0 20px 0;
+      font-weight: bold; font-size: 15px;
+    }
+    .passenger-row {
+      display: flex; background: var(--white); padding: 18px;
+      border-radius: 8px; gap: 10px; justify-content: space-around;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%;
+    }
     .p-input { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-size: 16px; font-weight: bold; }
     .p-input input { width: 60px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; text-align: center; font-size: 18px; }
-    footer { position: fixed; bottom: 0; width: 100%; background: var(--white); border-top: 5px solid var(--primary); padding: 18px 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 100; }
-    .footer-main-row { display: flex; align-items: center; justify-content: center; gap: clamp(12px, 4vw, 30px); white-space: nowrap; padding: 0 15px; cursor: pointer; }
+    footer {
+      position: fixed; bottom: 0; width: 100%;
+      background: var(--white); border-top: 5px solid var(--primary);
+      padding: 18px 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 100;
+    }
+    .footer-main-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: clamp(12px, 4vw, 30px); white-space: nowrap; padding: 0 15px; cursor: pointer;
+    }
     .total-label { font-size: 14px; font-weight: bold; color: var(--gray); display: flex; align-items: center; gap: 4px; }
     .price-item { display: flex; align-items: baseline; gap: 4px; font-weight: bold; color: var(--text); font-size: 13px; }
     .price-val { color: var(--primary); font-size: clamp(22px, 6.5vw, 30px); font-weight: 900; letter-spacing: -1px; }
-    .breakdown { display: none; max-height: 250px; overflow-y: auto; padding: 15px 25px; font-size: 14px; border-top: 1px solid #eee; background: #fff; color: var(--text); }
+    .breakdown {
+      display: none; max-height: 250px; overflow-y: auto; padding: 15px 25px;
+      font-size: 14px; border-top: 1px solid #eee; background: #fff; color: var(--text);
+    }
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
     .modal-content { background: #fff; width: 85%; max-width: 360px; margin: 20% auto; padding: 30px; border-radius: 12px; }
     .modal-btn { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-weight: bold; margin-top: 20px; font-size: 16px; }
-    .menu-drawer { position: fixed; top: 0; left: 0; width: 280px; height: 100%; background: var(--white); z-index: 1001; transition: transform 0.3s ease-out; transform: translateX(-101%); padding: 25px; }
+    .menu-drawer {
+      position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+      background: var(--white); z-index: 1001; transition: transform 0.3s ease-out;
+      transform: translateX(-101%); padding: 25px;
+    }
     .menu-drawer.active { transform: translateX(0); box-shadow: 8px 0 20px rgba(0,0,0,0.2); }
     .menu-drawer h3 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-top: 0; }
     .menu-link { display: block; padding: 18px 0; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: var(--text); font-weight: bold; }
-    #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; color: var(--primary); }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-<div id="loadingOverlay">
-  <div class="material-icons" style="font-size: 50px; margin-bottom: 10px; animation: spin 2s linear infinite;">sync</div>
-  データ読み込み中...
-</div>
-
 <header>
   <div class="header-icon"><span class="material-icons" onclick="toggleMenu()">menu</span></div>
-  <div class="tax-display" id="taxHeader">読み込み中...</div>
+  <div class="tax-display" id="taxHeader">【所得税率】--% 【住民税率(所得割)】10%</div>
   <div class="header-icon"><span class="material-icons" onclick="openSettings()">settings</span></div>
 </header>
 
@@ -88,37 +130,44 @@
 </div>
 
 <script>
-// --- 重要：ここに最新のGAS URL(末尾/exec)を貼り付け ---
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwRMixPJjGvHPn5ywLkg_XaMhpk1cPJ1G6AAL6K6m6n0JbJut0Hf3y2M42XqGyc1JGY/exec"; 
-
 let appData = {};
 let selectedIncomeTax = 0;
-const RESIDENCE_TAX = 0.1; // 10%固定
+const RESIDENCE_TAX = 0.1; // 住民税 10%
+
+// 【必須】GAS側でウェブアプリとしてデプロイした際に発行される「ウェブアプリURL」をここに貼り付けてください
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxvKlbO0KCBNeVgiIPD_lSyFYrudMWmrPumzkocR6y7ArABYVuwwgKPUjgDqJFP9M9C/exec'; 
 
 window.onload = () => {
+  // GitHub PagesからCORSエラーを起こさずにGASのデータを安全に取得します
   fetch(GAS_URL)
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) throw new Error('ネットワーク応答が正常ではありません。');
+      return response.json();
+    })
     .then(data => {
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
       appData = data;
-      document.getElementById('loadingOverlay').style.display = 'none';
       initApp();
     })
     .catch(error => {
-      alert("データの読み込みに失敗しました。GASの公開設定を確認してください。");
-      console.error(error);
+      console.error('Error fetching data:', error);
+      alert('データの読み込みに失敗しました。GASの公開設定（全員にアクセスを許可しているか）やURLを確認してください。');
     });
 };
 
 function initApp() {
   const incomeSel = document.getElementById('incomeTaxSelect');
-  incomeSel.innerHTML = "";
-  appData.taxes.income.forEach((v) => {
+  appData.taxes.income.forEach((v, i) => {
     let opt = new Option(v + "%", v);
     if(v == 20) opt.selected = true;
     incomeSel.add(opt);
   });
+  if (incomeSel.selectedIndex === -1 && incomeSel.options.length > 0) incomeSel.options[0].selected = true;
+  
   const linkCont = document.getElementById('linkContainer');
-  linkCont.innerHTML = "";
   appData.links.forEach(l => {
     const a = document.createElement('a');
     a.href = l.url; a.className = 'menu-link'; a.target = '_blank';
@@ -132,27 +181,71 @@ function initApp() {
 function addRouteRow() {
   const id = Date.now();
   const optionsHtml = appData.airports.map(a => {
-    if (a.isCategory) return `<option value="${a.name}" disabled style="background:#eee; font-weight:bold; color:#E60012; padding:5px 0;">${a.name}</option>`;
-    return `<option value="${a.name}">${a.name}</option>`;
+    if (a.isCategory) {
+      return `<option value="${a.name}" disabled style="background:#eee; font-weight:bold; color:#E60012; padding:5px 0;">${a.name}</option>`;
+    } else {
+      return `<option value="${a.name}">${a.name}</option>`;
+    }
   }).join('');
-  const html = `<div class="route-card" id="row-${id}"><select id="dep-${id}" onchange="updateArrivalOptions('${id}')"><option value="">出発地</option>${optionsHtml}</select><span class="material-icons arrow-icon">arrow_forward</span><select id="arr-${id}" onchange="calculate()"><option value="">到着地</option>${optionsHtml}</select><span class="material-icons" style="color:#ddd; cursor:pointer; font-size:26px; margin-left:4px;" onclick="removeRow('${id}')">cancel</span></div>`;
+
+  const html = `
+    <div class="route-card" id="row-${id}">
+      <select id="dep-${id}" onchange="updateArrivalOptions('${id}')">
+        <option value="">出発地</option>
+        ${optionsHtml}
+      </select>
+      <span class="material-icons arrow-icon">arrow_forward</span>
+      <select id="arr-${id}" onchange="calculate()">
+        <option value="">到着地</option>
+        ${optionsHtml}
+      </select>
+      <span class="material-icons" style="color:#ddd; cursor:pointer; font-size:26px; margin-left:4px;" onclick="removeRow('${id}')">cancel</span>
+    </div>
+  `;
   document.getElementById('routeContainer').insertAdjacentHTML('beforeend', html);
 }
 
 function updateArrivalOptions(id) {
   const depVal = document.getElementById(`dep-${id}`).value;
   const arrSelect = document.getElementById(`arr-${id}`);
-  const possibleArrs = appData.routes.filter(r => r.name.includes(depVal)).map(r => r.name.replace(depVal, "").replace("=", ""));
-  Array.from(arrSelect.options).forEach(opt => {
-    if (opt.value === "" || opt.disabled) return;
-    opt.disabled = !possibleArrs.includes(opt.value);
-    opt.style.color = opt.disabled ? "#ccc" : "#000";
-  });
+  
+  // 出発地が変更されたので、現在の到着地の選択を一旦クリアしてリセット
+  arrSelect.value = "";
+
+  if (depVal === "") {
+    // 出発地が何も選択されていない場合は、すべての到着地を選択可能（初期状態）に戻す
+    Array.from(arrSelect.options).forEach(opt => {
+      if (opt.value === "" || opt.value.startsWith('【')) return;
+      opt.disabled = false;
+      opt.style.color = "#000";
+    });
+  } else {
+    // 出発地が選択されている場合は、路線設定のある到着地のみを有効化（グレーアウトの再計算）
+    const possibleArrs = appData.routes
+      .filter(r => r.name.includes(depVal))
+      .map(r => r.name.replace(depVal, "").replace("=", ""));
+
+    Array.from(arrSelect.options).forEach(opt => {
+      if (opt.value === "" || opt.value.startsWith('【')) return;
+      
+      // 毎回新しく利用可能か上書き評価することで、グレーアウトが固着するのを防ぐ
+      opt.disabled = !possibleArrs.includes(opt.value);
+      opt.style.color = opt.disabled ? "#ccc" : "#000";
+    });
+  }
   calculate();
 }
 
 function removeRow(id) {
-  if (document.querySelectorAll('.route-card').length > 1) { document.getElementById(`row-${id}`).remove(); calculate(); }
+  if (document.querySelectorAll('.route-card').length > 1) { 
+    // 2路線目以降は今までと同様に枠全体を削除
+    document.getElementById(`row-${id}`).remove(); 
+    calculate(); 
+  } else {
+    // 1路線目の場合は枠を残し、出発地を空にして連動クリア（初期状態）を呼び出す
+    document.getElementById(`dep-${id}`).value = "";
+    updateArrivalOptions(id);
+  }
 }
 
 function saveSettings() {
@@ -164,8 +257,7 @@ function saveSettings() {
 }
 
 /**
- * 修正された運賃計算ロジック
- * 大人・子供それぞれの運賃とPFCを個別に計算し、合計します。
+ * 運賃計算メインロジック
  */
 function calculate() {
   let totalLT00 = 0, totalLTZL = 0;
@@ -181,20 +273,22 @@ function calculate() {
     if (dep && arr) {
       const route = appData.routes.find(r => r.name === `${dep}=${arr}` || r.name === `${arr}=${dep}`);
       const dPort = appData.airports.find(a => a.name === dep && !a.isCategory);
-      const aPort = appData.airports.find(a => a.name === arr && !a.isCategory);
+      const aPort = appPort = appData.airports.find(a => a.name === arr && !a.isCategory);
       
       if (route && dPort && aPort) {
-        // --- 大人(1名あたり)の計算 ---
-        // LT00 = (基本運賃×所得税) + (基本運賃×住民税) + 出発PFC + 到着PFC
-        const lt00A = (route.fareA * selectedIncomeTax) + (route.fareA * RESIDENCE_TAX) + dPort.pfcA + aPort.pfcA;
-        // LTZL = 基本運賃 + 出発PFC + 到着PFC
-        const ltzlA = route.fareA + dPort.pfcA + aPort.pfcA;
+        // --- 大人料金の計算 ---
+        const fareA = route.fareA;
+        const pfcSumA = dPort.pfcA + aPort.pfcA;
+        const lt00A = (fareA * selectedIncomeTax) + (fareA * RESIDENCE_TAX) + pfcSumA;
+        const ltzlA = fareA + pfcSumA;
 
-        // --- 子供(1名あたり)の計算 ---
-        const lt00C = (route.fareC * selectedIncomeTax) + (route.fareC * RESIDENCE_TAX) + dPort.pfcC + aPort.pfcC;
-        const ltzlC = route.fareC + dPort.pfcC + aPort.pfcC;
+        // --- 子供料金の計算 ---
+        const fareC = route.fareC;
+        const pfcSumC = dPort.pfcC + aPort.pfcC;
+        const lt00C = (fareC * selectedIncomeTax) + (fareC * RESIDENCE_TAX) + pfcSumC;
+        const ltzlC = fareC + pfcSumC;
 
-        // 全体の合計に加算
+        // 合計への加算
         totalLT00 += (lt00A * adults) + (lt00C * children);
         totalLTZL += (ltzlA * adults) + (ltzlC * children);
         
@@ -202,8 +296,8 @@ function calculate() {
           <div style="border-bottom:1px solid #eee; padding:12px 0;">
             <b style="color:var(--primary)">${dep} ⇄ ${arr}</b><br>
             <span style="font-size:12px; color:var(--gray)">
-              大人1名: LT00 ¥${Math.round(lt00A).toLocaleString()} / LTZL ¥${Math.round(ltzlA).toLocaleString()}<br>
-              子供1名: LT00 ¥${Math.round(lt00C).toLocaleString()} / LTZL ¥${Math.round(ltzlC).toLocaleString()}
+              大人: LT00 ¥${Math.round(lt00A).toLocaleString()} / LTZL ¥${Math.round(ltzlA).toLocaleString()}<br>
+              子供: LT00 ¥${Math.round(lt00C).toLocaleString()} / LTZL ¥${Math.round(ltzlC).toLocaleString()}
             </span>
           </div>`;
       }
@@ -214,10 +308,20 @@ function calculate() {
   document.getElementById('breakdownSection').innerHTML = detailHtml || "路線を選択してください";
 }
 
-function toggleMenu() { document.getElementById('menuDrawer').classList.toggle('active'); const overlay = document.getElementById('menuOverlay'); overlay.style.display = (overlay.style.display === 'block') ? 'none' : 'block'; }
+function toggleMenu() {
+  document.getElementById('menuDrawer').classList.toggle('active');
+  const overlay = document.getElementById('menuOverlay');
+  overlay.style.display = (overlay.style.display === 'block') ? 'none' : 'block';
+}
 function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
 function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
-function toggleBreakdown() { const b = document.getElementById('breakdownSection'); const icon = document.getElementById('expandIcon'); const isShow = (b.style.display === 'block'); b.style.display = isShow ? 'none' : 'block'; icon.innerText = isShow ? 'add_circle' : 'remove_circle'; }
+function toggleBreakdown() {
+  const b = document.getElementById('breakdownSection');
+  const icon = document.getElementById('expandIcon');
+  const isShow = (b.style.display === 'block');
+  b.style.display = isShow ? 'none' : 'block';
+  icon.innerText = isShow ? 'add_circle' : 'remove_circle';
+}
 </script>
 </body>
 </html>
