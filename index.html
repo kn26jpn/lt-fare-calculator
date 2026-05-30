@@ -35,7 +35,7 @@
       flex-direction: column;
     }
 
-    /* ヘッダーデザインのかっこいい色変更 */
+    /* ヘッダーデザイン */
     header {
       display: flex;
       justify-content: space-between;
@@ -89,7 +89,7 @@
       box-shadow: 0 0 12px var(--primary);
     }
 
-    /* PC、iPad、スマホ対応レイアウト（デバイス別最適化） */
+    /* デバイス別最適化レイアウト */
     .app-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -97,7 +97,7 @@
       flex-grow: 1;
     }
 
-    /* PC画面サイズ（全画面いっぱいに収める最適化） */
+    /* PC画面サイズ（全画面いっぱいに無駄なく収める最適化） */
     @media (min-width: 1200px) {
       body {
         height: 100vh;
@@ -130,7 +130,7 @@
       }
     }
 
-    /* iPad / スマホ等でのカード単体の基本スタイル */
+    /* 基本カードスタイル */
     .card {
       background-color: var(--card-bg);
       border-radius: 12px;
@@ -169,7 +169,7 @@
     .value.income { color: var(--primary); }
     .value.saving { color: var(--secondary); }
 
-    /* グラフ描画エリアの最適サイズ保持 */
+    /* グラフ描画エリア */
     .chart-wrapper {
       position: relative;
       background-color: var(--input-bg);
@@ -244,7 +244,7 @@
     
     .submit-btn { width: 100%; padding: 12px; background-color: var(--primary); color: #000; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 5px; }
 
-    /* かっこいい色味に洗練されたローディング */
+    /* 洗練されたローディング */
     .loading-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -252,12 +252,9 @@
       display: flex; justify-content: center; align-items: center;
       z-index: 3000;
     }
-    .loading-box {
-      text-align: center;
-    }
+    .loading-box { text-align: center; }
     .loading-text {
-      font-size: 1.4rem;
-      font-weight: 900;
+      font-size: 1.4rem; font-weight: 900;
       background: var(--gradient-text);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -402,7 +399,7 @@
   </div>
 
   <script>
-    // 固定されたGASウェブアプリURL
+    // 固定URL
     const GAS_URL = "https://script.google.com/macros/s/AKfycbySL67wsEswbiUJ3GVXFmC7MeNFRuq3csN8RoCiCWE4tZezgiFEmEkSUBhyIXc9Dch4/exec"; 
 
     let currentFormType = 'expense'; 
@@ -414,7 +411,6 @@
       income: ['現金', 'ポイント']
     };
 
-    // Chartインスタンス管理用
     let expenseChartInstance = null;
     let incomeChartInstance = null;
     let savingChartInstance = null;
@@ -426,7 +422,6 @@
       fetchInitialData();
     });
 
-    // フィルターセレクトボックスの初期生成（過去5年〜未来1年を全網羅）
     function initYearMonthFilters() {
       const now = new Date();
       const currentYear = now.getFullYear();
@@ -502,7 +497,6 @@
           renderSelectOptions('member', res.members);
           renderSelectOptions('category', res.expenseCategories);
 
-          // 選択されたフィルターに合わせて集計と画面表示
           processAndRenderDashboard();
           
           document.getElementById('loading').classList.add('hidden');
@@ -520,7 +514,6 @@
       processAndRenderDashboard();
     }
 
-    // 💡最重要：選択年月データの一括リアルタイム集計＆グラフ再レンダリング処理
     function processAndRenderDashboard() {
       const selectedYear = parseInt(document.getElementById('filter-year').value);
       const selectedMonth = parseInt(document.getElementById('filter-month').value);
@@ -528,15 +521,13 @@
       let sumCard = 0, sumOther = 0, sumIncome = 0;
       let timelineRows = [];
 
-      // 各カテゴリー集計用のオブジェクト
       let expenseCategoryMap = {};
       let incomeCategoryMap = {};
 
-      // 年間グラフ（1月〜12月分）の月次集計配列
       let yearlyIncomes = Array(12).fill(0);
       let yearlyExpenses = Array(12).fill(0);
 
-      // --- 1. クレジットカードデータの解析 ---
+      // クレジットカードデータの解析
       rawDataFromServer.cardData.forEach(row => {
         if (!row[0]) return;
         const d = new Date(row[0]);
@@ -554,7 +545,7 @@
         }
       });
 
-      // --- 2. その他支出データの解析 ---
+      // その他支出データの解析
       rawDataFromServer.otherExpenseData.forEach(row => {
         if (!row[0]) return;
         const d = new Date(row[0]);
@@ -572,7 +563,7 @@
         }
       });
 
-      // --- 3. 収入データの解析 ---
+      // 収入データの解析
       rawDataFromServer.incomeData.forEach(row => {
         if (!row[0]) return;
         const d = new Date(row[0]);
@@ -593,12 +584,10 @@
       const totalExpense = sumCard + sumOther;
       const totalSaving = sumIncome - totalExpense;
 
-      // ダッシュボード上部の数値を書き換え
       document.getElementById('sum-income').innerText = `¥${sumIncome.toLocaleString()}`;
       document.getElementById('sum-expense').innerText = `¥${totalExpense.toLocaleString()}`;
       document.getElementById('sum-saving').innerText = `¥${totalSaving.toLocaleString()}`;
 
-      // テーブル明細履歴のソートと描写
       timelineRows.sort((a, b) => new Date(b.date) - new Date(a.date));
       const tbody = document.getElementById('data-timeline');
       tbody.innerHTML = '';
@@ -622,20 +611,19 @@
         });
       }
 
-      // --- グラフ生成ロジック ---
+      // 💡「2d」に修正完了
       renderExpenseChart(expenseCategoryMap);
       renderIncomeChart(incomeCategoryMap);
       renderSavingLineChart(yearlyIncomes, yearlyExpenses);
     }
 
-    // 1. 支出円グラフ
     function renderExpenseChart(dataMap) {
       const labels = Object.keys(dataMap);
       const data = Object.values(dataMap);
       
       if(expenseChartInstance) expenseChartInstance.destroy();
       
-      const ctx = document.getElementById('expenseChart').getContext('2m');
+      const ctx = document.getElementById('expenseChart').getContext('2d');
       expenseChartInstance = new Chart(ctx, {
         type: 'pie',
         data: {
@@ -652,14 +640,13 @@
       });
     }
 
-    // 2. 収入ドーナツグラフ
     function renderIncomeChart(dataMap) {
       const labels = Object.keys(dataMap);
       const data = Object.values(dataMap);
 
       if(incomeChartInstance) incomeChartInstance.destroy();
 
-      const ctx = document.getElementById('incomeChart').getContext('2m');
+      const ctx = document.getElementById('incomeChart').getContext('2d');
       incomeChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -676,7 +663,6 @@
       });
     }
 
-    // 3. 資産残高（貯蓄の月次累積）推移折れ線グラフ
     function renderSavingLineChart(incomes, expenses) {
       let cumulativeSaving = [];
       let currentTotal = 0;
@@ -689,7 +675,7 @@
 
       if(savingChartInstance) savingChartInstance.destroy();
 
-      const ctx = document.getElementById('savingLineChart').getContext('2m');
+      const ctx = document.getElementById('savingLineChart').getContext('2d');
       savingChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
@@ -715,10 +701,9 @@
       });
     }
 
-    // データ送信処理
     async function handleSubmit(event) {
       event.preventDefault();
-      toggleModal(false); // 入力モーダルを閉じる
+      toggleModal(false);
       
       const loading = document.getElementById('loading');
       loading.classList.remove('hidden');
