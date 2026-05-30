@@ -1,748 +1,344 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>家計・資産管理統合システム</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #0b111e;
-      --card-bg: #151f32;
-      --input-bg: #1e2d4a;
-      --text-color: #ffffff;
-      --text-muted: #8fa0dd;
-      --primary: #00e676; /* 鮮やかなグリーン */
-      --secondary: #00b0ff; /* シアン */
-      --accent: #ff3d00; /* オレンジ/レッド */
-      --border-color: #263b5e;
-      --gradient-text: linear-gradient(135deg, #00b0ff, #00e676);
+      --primary: #E60012; /* JALレッド */
+      --bg: #F7F7F7;      
+      --white: #ffffff;
+      --text: #333333;
+      --gray: #666666;
+      --border: #CCCCCC;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
+    * { box-sizing: border-box; }
     body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 15px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      margin: 0; padding: 0; background-color: var(--bg); color: var(--text);
+      padding-bottom: 160px;
     }
-
-    /* ヘッダーデザイン */
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 15px;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-      gap: 10px;
+      background: var(--primary); color: var(--white);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 8px; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-
-    header h1 {
-      font-size: 1.6rem;
-      background: var(--gradient-text);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+    .tax-display {
+      flex: 1; text-align: center; white-space: nowrap; overflow: hidden;
+      font-size: clamp(8px, 2.6vw, 12px); letter-spacing: -0.5px; font-weight: 500;
     }
-
-    /* コントロール・フィルターエリア */
-    .controls-panel {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .header-icon { cursor: pointer; width: 36px; text-align: center; display: flex; align-items: center; justify-content: center; }
+    .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+    h2 { text-align: center; font-size: 1.2rem; color: var(--text); margin: 5px 0 20px 0; font-weight: bold; }
+    .route-card {
+      background: var(--white); border-radius: 8px; padding: 12px 10px;
+      margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex; align-items: center; gap: 8px; width: 100%;
     }
-
-    .filter-select {
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      width: auto;
+    select {
+      flex: 1; padding: 12px 6px; border: 1px solid var(--border);
+      border-radius: 4px; font-size: 15px; background: #fff; min-width: 0;
+      color: var(--text); -webkit-appearance: none;
     }
-
-    .open-modal-btn {
-      background-color: var(--primary);
-      color: #000;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-weight: 800;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: box-shadow 0.2s;
+    .arrow-icon { color: var(--primary); font-size: 20px; flex-shrink: 0; }
+    .btn-add {
+      display: flex; align-items: center; justify-content: center;
+      background: var(--white); border: 1.5px solid var(--primary);
+      color: var(--primary); width: 100%; padding: 12px;
+      border-radius: 8px; cursor: pointer; margin: 0 0 20px 0;
+      font-weight: bold; font-size: 15px;
     }
-    .open-modal-btn:hover {
-      box-shadow: 0 0 12px var(--primary);
+    .passenger-row {
+      display: flex; background: var(--white); padding: 18px;
+      border-radius: 8px; gap: 10px; justify-content: space-around;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%;
     }
-
-    /* デバイス別最適化レイアウト */
-    .app-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 15px;
-      flex-grow: 1;
+    .p-input { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-size: 16px; font-weight: bold; }
+    .p-input input { width: 60px; padding: 10px; border: 1px solid var(--border); border-radius: 6px; text-align: center; font-size: 18px; }
+    footer {
+      position: fixed; bottom: 0; width: 100%;
+      background: var(--white); border-top: 5px solid var(--primary);
+      padding: 18px 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); z-index: 100;
     }
-
-    /* PC画面サイズ（全画面いっぱいに無駄なく収める最適化） */
-    @media (min-width: 1200px) {
-      body {
-        height: 100vh;
-        overflow: hidden;
-      }
-      .app-grid {
-        grid-template-columns: 3fr 2fr;
-        height: calc(100vh - 80px);
-      }
-      .left-column, .right-column {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        overflow: hidden;
-      }
-      .dashboard-card {
-        flex-grow: 1;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-      }
-      .table-container {
-        flex-grow: 1;
-        overflow-y: auto;
-      }
-      .charts-subgrid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-      }
+    .footer-main-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: clamp(12px, 4vw, 30px); white-space: nowrap; padding: 0 15px; cursor: pointer;
     }
-
-    /* 基本カードスタイル */
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      padding: 15px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    .total-label { font-size: 14px; font-weight: bold; color: var(--gray); display: flex; align-items: center; gap: 4px; }
+    .price-item { display: flex; align-items: baseline; gap: 4px; font-weight: bold; color: var(--text); font-size: 13px; }
+    .price-val { color: var(--primary); font-size: clamp(22px, 6.5vw, 30px); font-weight: 900; letter-spacing: -1px; }
+    .breakdown {
+      display: none; max-height: 250px; overflow-y: auto; padding: 15px 25px;
+      font-size: 14px; border-top: 1px solid #eee; background: #fff; color: var(--text);
     }
-
-    .card h2 {
-      font-size: 1.1rem;
-      margin-bottom: 12px;
-      color: var(--secondary);
-      border-left: 4px solid var(--secondary);
-      padding-left: 8px;
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+    .modal-content { background: #fff; width: 85%; max-width: 360px; margin: 20% auto; padding: 30px; border-radius: 12px; }
+    .modal-btn { width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-weight: bold; margin-top: 20px; font-size: 16px; }
+    .menu-drawer {
+      position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+      background: var(--white); z-index: 1001; transition: transform 0.3s ease-out;
+      transform: translateX(-101%); padding: 25px;
     }
-
-    /* 集計ディスプレイ */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .summary-box {
-      background-color: var(--input-bg);
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-      border: 1px solid var(--border-color);
-    }
-
-    .summary-box .title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 3px;}
-    .summary-box .value { font-size: 1.1rem; font-weight: bold; }
-    .value.expense { color: var(--accent); }
-    .value.income { color: var(--primary); }
-    .value.saving { color: var(--secondary); }
-
-    /* グラフ描画エリア */
-    .chart-wrapper {
-      position: relative;
-      background-color: var(--input-bg);
-      border-radius: 8px;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      margin-bottom: 10px;
-      height: 200px;
-    }
-    .chart-wrapper.line-wrapper {
-      height: 220px;
-    }
-
-    /* テーブル設計 */
-    .table-container {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      text-align: left;
-      min-width: 500px;
-    }
-
-    th, td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); }
-    th { background-color: var(--input-bg); color: var(--text-muted); font-weight: 600; position: sticky; top: 0; z-index: 10;}
-    tr:hover { background-color: rgba(255,255,255,0.02); }
-
-    /* モーダルポップアップ（データ入力画面） */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(4, 7, 13, 0.85);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 2000;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
-
-    .modal-content {
-      background-color: var(--card-bg);
-      width: 90%; max-width: 450px;
-      border-radius: 12px; padding: 20px;
-      border: 1px solid var(--border-color);
-      transform: scale(0.9); transition: transform 0.3s ease;
-    }
-    .modal-overlay.open .modal-content { transform: scale(1); }
-
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;
-    }
-    .modal-header h3 { color: var(--primary); font-size: 1.2rem; }
-    .close-modal-btn { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
-
-    /* フォームパーツ */
-    .form-group { margin-bottom: 12px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
-    input, select, textarea {
-      width: 100%; padding: 10px; background-color: var(--input-bg);
-      border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color); font-size: 0.95rem; outline: none;
-    }
-    input:focus, select:focus, textarea:focus { border-color: var(--secondary); }
-
-    .tab-container { display: flex; margin-bottom: 12px; background-color: var(--input-bg); border-radius: 6px; padding: 2px; }
-    .tab-btn { flex: 1; padding: 8px; background: none; border: none; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; border-radius: 4px; font-weight: bold; }
-    .tab-btn.active { background-color: var(--card-bg); color: var(--primary); }
-    
-    .submit-btn { width: 100%; padding: 12px; background-color: var(--primary); color: #000; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 5px; }
-
-    /* 洗練されたローディング */
-    .loading-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: var(--bg-color);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 3000;
-    }
-    .loading-box { text-align: center; }
-    .loading-text {
-      font-size: 1.4rem; font-weight: 900;
-      background: var(--gradient-text);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: 1px;
-      animation: pulse 1.5s infinite ease-in-out;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-    .hidden { display: none !important; }
+    .menu-drawer.active { transform: translateX(0); box-shadow: 8px 0 20px rgba(0,0,0,0.2); }
+    .menu-drawer h3 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-top: 0; }
+    .menu-link { display: block; padding: 18px 0; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: var(--text); font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <div id="loading" class="loading-overlay">
-    <div class="loading-box">
-      <div class="loading-text">SYSTEM LOADING...</div>
-    </div>
+<header>
+  <div class="header-icon"><span class="material-icons" onclick="toggleMenu()">menu</span></div>
+  <div class="tax-display" id="taxHeader">【所得税率】--% 【住民税率(所得割)】10%</div>
+  <div class="header-icon"><span class="material-icons" onclick="openSettings()">settings</span></div>
+</header>
+
+<div class="container">
+  <h2>運賃検索</h2>
+  <div id="routeContainer"></div>
+  <div class="btn-add" onclick="addRouteRow()">
+    <span class="material-icons" style="font-size:20px; margin-right:6px;">add_circle_outline</span> 路線を追加
   </div>
-
-  <header>
-    <h1>家計・資産管理</h1>
-    <div class="controls-panel">
-      <select id="filter-year" class="filter-select" onchange="handleFilterChange()"></select>
-      <select id="filter-month" class="filter-select" onchange="handleFilterChange()"></select>
-      <button class="open-modal-btn" onclick="toggleModal(true)">＋ データ入力</button>
-    </div>
-  </header>
-
-  <div class="app-grid">
-    
-    <div class="left-column">
-      <div class="card">
-        <div class="summary-grid">
-          <div class="summary-box">
-            <div class="title">総収入</div>
-            <div class="value income" id="sum-income">¥0</div>
-          </div>
-          <div class="summary-box">
-            <div class="title">総支出</div>
-            <div class="value expense" id="sum-expense">¥0</div>
-          </div>
-          <div class="summary-box">
-            <div class="title">当月貯蓄</div>
-            <div class="value saving" id="sum-saving">¥0</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="charts-subgrid">
-        <div class="card">
-          <h2>支出カテゴリー構成</h2>
-          <div class="chart-wrapper">
-            <canvas id="expenseChart"></canvas>
-          </div>
-        </div>
-        <div class="card">
-          <h2>収入カテゴリー構成</h2>
-          <div class="chart-wrapper">
-            <canvas id="incomeChart"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>年間の資産残高推移（貯蓄累積）</h2>
-        <div class="chart-wrapper line-wrapper">
-          <canvas id="savingLineChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <div class="right-column">
-      <div class="card dashboard-card">
-        <h2>選択月のデータ明細履歴</h2>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>日付</th>
-                <th>支払・受取者</th>
-                <th>方法/カード</th>
-                <th>カテゴリー</th>
-                <th>内容/詳細</th>
-                <th>金額</th>
-              </tr>
-            </thead>
-            <tbody id="data-timeline">
-              </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
+  <div class="passenger-row">
+    <div class="p-input">大人 <input type="number" id="adultCount" value="1" min="0" onchange="calculate()"> 名</div>
+    <div class="p-input">子供 <input type="number" id="childCount" value="0" min="0" onchange="calculate()"> 名</div>
   </div>
+</div>
 
-  <div id="input-modal" class="modal-overlay" onclick="if(event.target===this) toggleModal(false)">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>新規データ入力</h3>
-        <button class="close-modal-btn" onclick="toggleModal(false)">×</button>
-      </div>
-      
-      <div class="tab-container">
-        <button id="tab-expense" class="tab-btn active" onclick="switchFormTab('expense')">その他支出</button>
-        <button id="tab-income" class="tab-btn" onclick="switchFormTab('income')">収入</button>
-      </div>
-
-      <form id="main-form" onsubmit="handleSubmit(event)">
-        <div class="form-group">
-          <label for="date">日付</label>
-          <input type="date" id="date" required>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="member">メンバー</label>
-            <select id="member" required></select>
-          </div>
-          <div class="form-group">
-            <label for="category">カテゴリー</label>
-            <select id="category" required></select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label id="method-label" for="method">決済方法</label>
-          <select id="method" required></select>
-        </div>
-
-        <div class="form-group">
-          <label for="amount">金額（円）</label>
-          <input type="number" id="amount" min="1" placeholder="金額を入力" required>
-        </div>
-
-        <div class="form-group">
-          <label for="details">詳細備考</label>
-          <textarea id="details" rows="2" placeholder="メモなど"></textarea>
-        </div>
-
-        <button type="submit" class="submit-btn">データをスプレッドシートへ送信</button>
-      </form>
-    </div>
+<footer>
+  <div class="footer-main-row" onclick="toggleBreakdown()">
+    <div class="total-label">合計<span class="material-icons" id="expandIcon" style="font-size:20px;">add_circle</span></div>
+    <div class="price-item">LT00 <span class="price-val" id="totalLT00">¥0</span></div>
+    <div class="price-item">LTZL <span class="price-val" id="totalLTZL">¥0</span></div>
   </div>
+  <div class="breakdown" id="breakdownSection"></div>
+</footer>
 
-  <script>
-    // 固定URL
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbySL67wsEswbiUJ3GVXFmC7MeNFRuq3csN8RoCiCWE4tZezgiFEmEkSUBhyIXc9Dch4/exec"; 
+<div class="modal" id="settingsModal" onclick="closeSettings()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3 style="color:var(--primary); margin-top:0;">設定</h3>
+    <p style="font-size:13px; color:var(--gray); margin-bottom:15px;">所得税率を選択してください。</p>
+    <select id="incomeTaxSelect" style="width:100%;"></select>
+    <button class="modal-btn" onclick="saveSettings()">設定を適用</button>
+  </div>
+</div>
 
-    let currentFormType = 'expense'; 
-    let rawDataFromServer = null; 
-    let masterData = { members: [], expenseCategories: [], incomeCategories: [] };
+<div class="modal" id="menuOverlay" onclick="toggleMenu()"></div>
+<div class="menu-drawer" id="menuDrawer">
+  <h3>リンク</h3>
+  <div id="linkContainer"></div>
+</div>
 
-    const inputMethods = {
-      expense: ['現金', 'QRコード決済', 'その他'],
-      income: ['現金', 'ポイント']
-    };
+<script>
+let appData = {};
+let selectedIncomeTax = 0;
+const RESIDENCE_TAX = 0.1; // 住民税 10%
 
-    let expenseChartInstance = null;
-    let incomeChartInstance = null;
-    let savingChartInstance = null;
+// 【必須】GAS側でウェブアプリとしてデプロイした際に発行される「ウェブアプリURL」をここに貼り付けてください
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxvKlbO0KCBNeVgiIPD_lSyFYrudMWmrPumzkocR6y7ArABYVuwwgKPUjgDqJFP9M9C/exec'; 
 
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('date').value = new Date().toISOString().split('T')[0];
-      initYearMonthFilters();
-      updateMethodOptions();
-      fetchInitialData();
+window.onload = () => {
+  // GitHub PagesからCORSエラーを起こさずにGASのデータを安全に取得します
+  fetch(GAS_URL)
+    .then(response => {
+      if (!response.ok) throw new Error('ネットワーク応答が正常ではありません。');
+      return response.json();
+    })
+    .then(data => {
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      appData = data;
+      initApp();
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+      alert('データの読み込みに失敗しました。GASの公開設定（全員にアクセスを許可しているか）やURLを確認してください。');
     });
+};
 
-    function initYearMonthFilters() {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth() + 1;
+function initApp() {
+  const incomeSel = document.getElementById('incomeTaxSelect');
+  appData.taxes.income.forEach((v, i) => {
+    let opt = new Option(v + "%", v);
+    if(v == 20) opt.selected = true;
+    incomeSel.add(opt);
+  });
+  if (incomeSel.selectedIndex === -1 && incomeSel.options.length > 0) incomeSel.options[0].selected = true;
+  
+  const linkCont = document.getElementById('linkContainer');
+  appData.links.forEach(l => {
+    const a = document.createElement('a');
+    a.href = l.url; a.className = 'menu-link'; a.target = '_blank';
+    a.innerText = l.title;
+    linkCont.appendChild(a);
+  });
+  saveSettings();
+  addRouteRow();
+}
 
-      const yearSelect = document.getElementById('filter-year');
-      for (let y = currentYear - 3; y <= currentYear + 1; y++) {
-        const opt = document.createElement('option');
-        opt.value = y; opt.innerText = `${y}年`;
-        if (y === currentYear) opt.selected = true;
-        yearSelect.appendChild(opt);
-      }
-
-      const monthSelect = document.getElementById('filter-month');
-      for (let m = 1; m <= 12; m++) {
-        const opt = document.createElement('option');
-        opt.value = m; opt.innerText = `${m}月`;
-        if (m === currentMonth) opt.selected = true;
-        monthSelect.appendChild(opt);
-      }
+function addRouteRow() {
+  const id = Date.now();
+  const optionsHtml = appData.airports.map(a => {
+    if (a.isCategory) {
+      // disabledを廃止し、valueを識別用キーワードに変更して、通常の黒文字（#333333）を指定
+      return `<option value="__category__" style="background:#eee; font-weight:bold; color:#333333; padding:5px 0;">${a.name}</option>`;
+    } else {
+      return `<option value="${a.name}">${a.name}</option>`;
     }
+  }).join('');
 
-    function toggleModal(show) {
-      const modal = document.getElementById('input-modal');
-      if (show) modal.classList.add('open');
-      else modal.classList.remove('open');
-    }
+  const html = `
+    <div class="route-card" id="row-${id}">
+      <select id="dep-${id}" onchange="updateArrivalOptions('${id}')">
+        <option value="">出発地</option>
+        ${optionsHtml}
+      </select>
+      <span class="material-icons arrow-icon">arrow_forward</span>
+      <select id="arr-${id}" onchange="calculate()">
+        <option value="">到着地</option>
+        ${optionsHtml}
+      </select>
+      <span class="material-icons" style="color:#ddd; cursor:pointer; font-size:26px; margin-left:4px;" onclick="removeRow('${id}')">cancel</span>
+    </div>
+  `;
+  document.getElementById('routeContainer').insertAdjacentHTML('beforeend', html);
+}
 
-    function switchFormTab(type) {
-      currentFormType = type;
-      document.getElementById('tab-expense').classList.remove('active');
-      document.getElementById('tab-income').classList.remove('active');
-      document.getElementById(`tab-${type}`).classList.add('active');
+function updateArrivalOptions(id) {
+  const depSelect = document.getElementById(`dep-${id}`);
+  
+  // もし【主要な空港】などのカテゴリー行が選ばれたら、即座に未選択状態（空文字）にリセットして選択させない
+  if (depSelect.value === "__category__") {
+    depSelect.value = "";
+  }
+
+  const depVal = depSelect.value;
+  const arrSelect = document.getElementById(`arr-${id}`);
+  
+  // 出発地が変更されたので、現在の到着地の選択を一旦クリアしてリセット
+  arrSelect.value = "";
+
+  if (depVal === "") {
+    // 出発地が何も選択されていない場合は、すべての到着地を選択可能（初期状態）に戻す
+    Array.from(arrSelect.options).forEach(opt => {
+      if (opt.value === "" || opt.value === "__category__") return;
+      opt.disabled = false;
+      opt.style.color = "#000";
+    });
+  } else {
+    // 出発地が選択されている場合は、路線設定のある到着地のみを有効化（グレーアウトの再計算）
+    const possibleArrs = appData.routes
+      .filter(r => r.name.includes(depVal))
+      .map(r => r.name.replace(depVal, "").replace("=", ""));
+
+    Array.from(arrSelect.options).forEach(opt => {
+      if (opt.value === "" || opt.value === "__category__") return;
       
-      document.getElementById('method-label').innerText = type === 'expense' ? '決済方法' : '受取方法';
-      updateMethodOptions();
+      // 毎回新しく利用可能か上書き評価することで、グレーアウトが固着するのを防ぐ
+      opt.disabled = !possibleArrs.includes(opt.value);
+      opt.style.color = opt.disabled ? "#ccc" : "#000";
+    });
+  }
+  calculate();
+}
+
+function removeRow(id) {
+  if (document.querySelectorAll('.route-card').length > 1) { 
+    // 2路線目以降は今までと同様に枠全体を削除
+    document.getElementById(`row-${id}`).remove(); 
+    calculate(); 
+  } else {
+    // 1路線目の場合は枠を残し、出発地を空にして連動クリア（初期状態）を呼び出す
+    document.getElementById(`dep-${id}`).value = "";
+    updateArrivalOptions(id);
+  }
+}
+
+function saveSettings() {
+  const val = document.getElementById('incomeTaxSelect').value;
+  selectedIncomeTax = parseFloat(val) / 100;
+  document.getElementById('taxHeader').innerText = `【所得税率】${val}% 【住民税率(所得割)】10%`;
+  closeSettings();
+  calculate();
+}
+
+/**
+ * 運賃計算メインロジック
+ */
+function calculate() {
+  let totalLT00 = 0, totalLTZL = 0;
+  const adults = parseInt(document.getElementById('adultCount').value) || 0;
+  const children = parseInt(document.getElementById('childCount').value) || 0;
+  let detailHtml = "";
+
+  document.querySelectorAll('.route-card').forEach(row => {
+    const id = row.id.split('-')[1];
+    const depSelect = document.getElementById(`dep-${id}`);
+    const arrSelect = document.getElementById(`arr-${id}`);
+    
+    // 到着地や出発地側でカテゴリー行が万が一選ばれた場合も、即座に選択を弾いてリセットする
+    if (arrSelect.value === "__category__") arrSelect.value = "";
+    if (depSelect.value === "__category__") depSelect.value = "";
+
+    const dep = depSelect.value;
+    const arr = arrSelect.value;
+    
+    if (dep && arr) {
+      const route = appData.routes.find(r => r.name === `${dep}=${arr}` || r.name === `${arr}=${dep}`);
+      const dPort = appData.airports.find(a => a.name === dep && !a.isCategory);
+      const aPort = appData.airports.find(a => a.name === arr && !a.isCategory);
       
-      const targetCats = type === 'expense' ? masterData.expenseCategories : masterData.incomeCategories;
-      renderSelectOptions('category', targetCats);
-    }
+      if (route && dPort && aPort) {
+        // --- 大人料金の計算 ---
+        const fareA = route.fareA;
+        const pfcSumA = dPort.pfcA + aPort.pfcA;
+        const lt00A = (fareA * selectedIncomeTax) + (fareA * RESIDENCE_TAX) + pfcSumA;
+        const ltzlA = fareA + pfcSumA;
 
-    function updateMethodOptions() {
-      renderSelectOptions('method', inputMethods[currentFormType]);
-    }
+        // --- 子供料金の計算 ---
+        const fareC = route.fareC;
+        const pfcSumC = dPort.pfcC + aPort.pfcC;
+        const lt00C = (fareC * selectedIncomeTax) + (fareC * RESIDENCE_TAX) + pfcSumC;
+        const ltzlC = fareC + pfcSumC;
 
-    function renderSelectOptions(id, array) {
-      const select = document.getElementById(id);
-      select.innerHTML = '';
-      array.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item; opt.innerText = item;
-        select.appendChild(opt);
-      });
-    }
-
-    function parseAmount(val) {
-      if (typeof val === 'number') return val;
-      if (!val) return 0;
-      return Number(String(val).replace(/,/g, '').trim()) || 0;
-    }
-
-    async function fetchInitialData() {
-      try {
-        const response = await fetch(GAS_URL, { method: 'GET' });
-        const res = await response.json();
+        // 合計への加算
+        totalLT00 += (lt00A * adults) + (lt00C * children);
+        totalLTZL += (ltzlA * adults) + (ltzlC * children);
         
-        if (res.status === 'success') {
-          rawDataFromServer = res;
-          masterData.members = res.members;
-          masterData.expenseCategories = res.expenseCategories;
-          masterData.incomeCategories = res.incomeCategories;
-          
-          renderSelectOptions('member', res.members);
-          renderSelectOptions('category', res.expenseCategories);
-
-          processAndRenderDashboard();
-          
-          document.getElementById('loading').classList.add('hidden');
-        } else {
-          alert('データ同期エラー: ' + res.message);
-        }
-      } catch (error) {
-        console.error(error);
-        alert('GASシステムへの通信に失敗しました。');
+        detailHtml += `
+          <div style="border-bottom:1px solid #eee; padding:12px 0;">
+            <b style="color:var(--primary)">${dep} ⇄ ${arr}</b><br>
+            <span style="font-size:12px; color:var(--gray)">
+              大人: LT00 ¥${Math.round(lt00A).toLocaleString()} / LTZL ¥${Math.round(ltzlA).toLocaleString()}<br>
+              子供: LT00 ¥${Math.round(lt00C).toLocaleString()} / LTZL ¥${Math.round(ltzlC).toLocaleString()}
+            </span>
+          </div>`;
       }
     }
+  });
+  document.getElementById('totalLT00').innerText = `¥${Math.round(totalLT00).toLocaleString()}`;
+  document.getElementById('totalLTZL').innerText = `¥${Math.round(totalLTZL).toLocaleString()}`;
+  document.getElementById('breakdownSection').innerHTML = detailHtml || "路線を選択してください";
+}
 
-    function handleFilterChange() {
-      if (!rawDataFromServer) return;
-      processAndRenderDashboard();
-    }
-
-    function processAndRenderDashboard() {
-      const selectedYear = parseInt(document.getElementById('filter-year').value);
-      const selectedMonth = parseInt(document.getElementById('filter-month').value);
-
-      let sumCard = 0, sumOther = 0, sumIncome = 0;
-      let timelineRows = [];
-
-      let expenseCategoryMap = {};
-      let incomeCategoryMap = {};
-
-      let yearlyIncomes = Array(12).fill(0);
-      let yearlyExpenses = Array(12).fill(0);
-
-      // クレジットカードデータの解析
-      rawDataFromServer.cardData.forEach(row => {
-        if (!row[0]) return;
-        const d = new Date(row[0]);
-        const y = d.getFullYear();
-        const m = d.getMonth() + 1;
-        const amt = parseAmount(row[5]);
-
-        if (y === selectedYear) {
-          yearlyExpenses[d.getMonth()] += amt;
-          if (m === selectedMonth) {
-            sumCard += amt;
-            expenseCategoryMap[row[1]] = (expenseCategoryMap[row[1]] || 0) + amt;
-            timelineRows.push({ date: row[0], member: row[4], type: row[3]||'クレカ', cat: row[1], amount: amt, desc: row[2]||'' });
-          }
-        }
-      });
-
-      // その他支出データの解析
-      rawDataFromServer.otherExpenseData.forEach(row => {
-        if (!row[0]) return;
-        const d = new Date(row[0]);
-        const y = d.getFullYear();
-        const m = d.getMonth() + 1;
-        const amt = parseAmount(row[4]);
-
-        if (y === selectedYear) {
-          yearlyExpenses[d.getMonth()] += amt;
-          if (m === selectedMonth) {
-            sumOther += amt;
-            expenseCategoryMap[row[2]] = (expenseCategoryMap[row[2]] || 0) + amt;
-            timelineRows.push({ date: row[0], member: row[1], type: row[3], cat: row[2], amount: amt, desc: row[5]||'' });
-          }
-        }
-      });
-
-      // 収入データの解析
-      rawDataFromServer.incomeData.forEach(row => {
-        if (!row[0]) return;
-        const d = new Date(row[0]);
-        const y = d.getFullYear();
-        const m = d.getMonth() + 1;
-        const amt = parseAmount(row[4]);
-
-        if (y === selectedYear) {
-          yearlyIncomes[d.getMonth()] += amt;
-          if (m === selectedMonth) {
-            sumIncome += amt;
-            incomeCategoryMap[row[2]] = (incomeCategoryMap[row[2]] || 0) + amt;
-            timelineRows.push({ date: row[0], member: row[1], type: row[3], cat: row[2], amount: amt, desc: row[5]||'', isIncome: true });
-          }
-        }
-      });
-
-      const totalExpense = sumCard + sumOther;
-      const totalSaving = sumIncome - totalExpense;
-
-      document.getElementById('sum-income').innerText = `¥${sumIncome.toLocaleString()}`;
-      document.getElementById('sum-expense').innerText = `¥${totalExpense.toLocaleString()}`;
-      document.getElementById('sum-saving').innerText = `¥${totalSaving.toLocaleString()}`;
-
-      timelineRows.sort((a, b) => new Date(b.date) - new Date(a.date));
-      const tbody = document.getElementById('data-timeline');
-      tbody.innerHTML = '';
-
-      if(timelineRows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">選択月の明細データはありません</td></tr>`;
-      } else {
-        timelineRows.forEach(item => {
-          const tr = document.createElement('tr');
-          const fmtDate = item.date ? item.date.split('T')[0] : '';
-          const color = item.isIncome ? 'var(--primary)' : 'var(--text-color)';
-          tr.innerHTML = `
-            <td>${fmtDate}</td>
-            <td>${item.member}</td>
-            <td><span style="color:var(--text-muted); font-size:0.8rem;">${item.type}</span></td>
-            <td>${item.cat}</td>
-            <td style="color:var(--text-muted); font-size:0.8rem;">${item.desc}</td>
-            <td style="color:${color}; font-weight:bold; text-align:right;">${item.isIncome?'+':''}¥${item.amount.toLocaleString()}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-
-      // 💡「2d」に修正完了
-      renderExpenseChart(expenseCategoryMap);
-      renderIncomeChart(incomeCategoryMap);
-      renderSavingLineChart(yearlyIncomes, yearlyExpenses);
-    }
-
-    function renderExpenseChart(dataMap) {
-      const labels = Object.keys(dataMap);
-      const data = Object.values(dataMap);
-      
-      if(expenseChartInstance) expenseChartInstance.destroy();
-      
-      const ctx = document.getElementById('expenseChart').getContext('2d');
-      expenseChartInstance = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: data,
-            backgroundColor: ['#ff4560', '#00b0ff', '#00e676', '#feb019', '#775dd0', '#ff66c4', '#546e7a', '#a5d6a7']
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { position: 'right', labels: { color: '#ffffff', font: { size: 10 } } } }
-        }
-      });
-    }
-
-    function renderIncomeChart(dataMap) {
-      const labels = Object.keys(dataMap);
-      const data = Object.values(dataMap);
-
-      if(incomeChartInstance) incomeChartInstance.destroy();
-
-      const ctx = document.getElementById('incomeChart').getContext('2d');
-      incomeChartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: data,
-            backgroundColor: ['#00e676', '#00b0ff', '#feb019', '#775dd0']
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { position: 'right', labels: { color: '#ffffff', font: { size: 10 } } } }
-        }
-      });
-    }
-
-    function renderSavingLineChart(incomes, expenses) {
-      let cumulativeSaving = [];
-      let currentTotal = 0;
-
-      for (let i = 0; i < 12; i++) {
-        const monthlyNet = incomes[i] - expenses[i];
-        currentTotal += monthlyNet;
-        cumulativeSaving.push(currentTotal);
-      }
-
-      if(savingChartInstance) savingChartInstance.destroy();
-
-      const ctx = document.getElementById('savingLineChart').getContext('2d');
-      savingChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-          datasets: [{
-            label: '貯蓄累積推移 (円)',
-            data: cumulativeSaving,
-            borderColor: '#00b0ff',
-            backgroundColor: 'rgba(0, 176, 255, 0.1)',
-            fill: true,
-            tension: 0.2,
-            borderWidth: 3
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          scales: {
-            x: { grid: { color: '#263b5e' }, ticks: { color: '#8fa0dd' } },
-            y: { grid: { color: '#263b5e' }, ticks: { color: '#8fa0dd' } }
-          },
-          plugins: { legend: { labels: { color: '#ffffff' } } }
-        }
-      });
-    }
-
-    async function handleSubmit(event) {
-      event.preventDefault();
-      toggleModal(false);
-      
-      const loading = document.getElementById('loading');
-      loading.classList.remove('hidden');
-      loading.querySelector('.loading-text').innerText = "SENDING DATA...";
-
-      const payload = {
-        type: currentFormType,
-        date: document.getElementById('date').value,
-        member: document.getElementById('member').value,
-        category: document.getElementById('category').value,
-        method: document.getElementById('method').value,
-        amount: document.getElementById('amount').value,
-        details: document.getElementById('details').value
-      };
-
-      try {
-        const response = await fetch(GAS_URL, {
-          method: 'POST',
-          redirect: 'follow',
-          body: JSON.stringify(payload),
-          headers: { 'Content-Type': 'text/plain' }
-        });
-
-        const res = await response.json();
-        if (res.status === 'success') {
-          document.getElementById('amount').value = '';
-          document.getElementById('details').value = '';
-          loading.querySelector('.loading-text').innerText = "REFRESHING DASHBOARD...";
-          await fetchInitialData();
-        } else {
-          alert('書き込みエラー: ' + res.message);
-          loading.classList.add('hidden');
-        }
-      } catch (error) {
-        console.error(error);
-        alert('送信に失敗しました。');
-        loading.classList.add('hidden');
-      }
-    }
-  </script>
+function toggleMenu() {
+  document.getElementById('menuDrawer').classList.toggle('active');
+  const overlay = document.getElementById('menuOverlay');
+  overlay.style.display = (overlay.style.display === 'block') ? 'none' : 'block';
+}
+function openSettings() { document.getElementById('settingsModal').style.display = 'block'; }
+function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+function toggleBreakdown() {
+  const b = document.getElementById('breakdownSection');
+  const icon = document.getElementById('expandIcon');
+  const isShow = (b.style.display === 'block');
+  b.style.display = isShow ? 'none' : 'block';
+  icon.innerText = isShow ? 'add_circle' : 'remove_circle';
+}
+</script>
 </body>
 </html>
